@@ -6,9 +6,8 @@ class Application:
     app: Flask
 
     def __init__(self):
-        self.app.secret_key = "asdasdasdad"
+        self.app.secret_key = "'59;R,#aME%^urS]ux0JP1GGMv2ii531;12y0uNK~G8A9h=tE._<wr&^#b2*@/fcF_aqqqRQW8z>L(A;OtWC@Y&nh!T3_TvH5T=^"
         self.app = Flask(__name__)
-        self.__settings()
         self.__register_routes()
 
     def start(self):
@@ -17,13 +16,5 @@ class Application:
         except:
             pass
 
-    """def __settings(self) -> None:
-        try:
-            self.app.config.from_mapping(
-                SECRET_KEY="AJSLDHNASKJDBNALSDNA"
-            )
-        except Exception as e:
-            pass"""
-    
     def __register_routes(self) -> None:
         self.app.add_url_rule(routes['index'], view_func=routes['index_controller'], methods=['GET'])
