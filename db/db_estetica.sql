@@ -1,4 +1,5 @@
 CREATE SCHEMA db_estetica;
+USE db_estetica;
 
 CREATE TABLE employees(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -15,7 +16,7 @@ CREATE TABLE schedules(
 );
 
 CREATE TABLE services(
-	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	uid TINYINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
     price INT NOT NULL
 );
@@ -30,7 +31,7 @@ CREATE TABLE customers(
 CREATE TABLE appointments(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     employee INT NOT NULL,
-    service INT NOT NULL,
+    service TINYINT NOT NULL,
     customer INT NOT NULL,
     schedule INT NOT NULL
 );
@@ -45,19 +46,19 @@ CREATE TABLE favorites(
     customer INT NOT NULL
 );
 
-ALTER TABLE employee 
+ALTER TABLE employees
 	ADD FOREIGN KEY (service) REFERENCES services(uid);
     
 ALTER TABLE appointments 
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
     ADD FOREIGN KEY (service) REFERENCES services(uid),
     ADD FOREIGN KEY (customer) REFERENCES customers(uid),
-    ADD FOREIGN KEY (schedule) REFERENCES schedules(uid)
+    ADD FOREIGN KEY (schedule) REFERENCES schedules(code)
 ;
 
 ALTER TABLE epmployee_schedule
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
-    ADD FOREIGN KEY (schedule) REFERENCES schedules(uid)
+    ADD FOREIGN KEY (schedule) REFERENCES schedules(code)
 ;
 
 ALTER TABLE favorites
