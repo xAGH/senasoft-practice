@@ -52,3 +52,21 @@ class Connection():
 
         finally:
             self.db.close()
+
+    def fetch_one(self, query):
+        """
+            Get one of data for a select query
+            @params: query --> Query what will be done in the database.
+            @return Data if the query was ejecuted successfully, else, it returns False
+        """
+        try:
+            self.start()
+            self.cursor.execute(query)
+            data = self.cursor.fetchone()
+            return data
+
+        except:
+            return False
+
+        finally:
+            self.db.close()
