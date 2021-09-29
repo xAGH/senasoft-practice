@@ -2,9 +2,12 @@ from flask import request, make_response, jsonify
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
 from src.models import Model
+from src.hooks import verify_token
 import jwt, datetime
 
 class IndexController(MethodView):
+
+    decorators = [verify_token]
 
     def get(self):
         return "Hello World!"
@@ -39,10 +42,10 @@ class SigninController(MethodView):
                     response.headers['Authorization'] = token
                     return response
                 return make_response(jsonify({
-                    "message": "Wrong password"
+                    "message": "Wrong credentials"
                 }), 400)
             return make_response(jsonify({
-                "message": "Wrong credentials. User doesn't exists"
+                "message": "Wrong credentials"
             }), 401)
         return make_response(jsonify({
             "message": "please send a JSON format"
@@ -54,9 +57,6 @@ class SignupController(MethodView):
 
     def __init__(self) -> None:
         self.model = Model()
-
-    def get(self):
-        return "Signup a user"
 
     def post(self):
         if request.is_json:
