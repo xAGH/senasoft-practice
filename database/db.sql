@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS db_senasoft;
+USE db_senasoft;
+
 CREATE TABLE IF NOT EXISTS employees(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	name VARCHAR(50) NOT NULL,
@@ -18,18 +21,19 @@ CREATE TABLE IF NOT EXISTS services(
     price INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS customers(
+CREATE TABLE IF NOT EXISTS users(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
     email VARCHAR(125) NOT NULL,
-    password VARCHAR(400) NOT NULL
+    password VARCHAR(400) NOT NULL,
+    is_admin CHAR(1) NOT NULL DEFAULT '0'
 );
 
 CREATE TABLE IF NOT EXISTS appointments(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     employee INT NOT NULL,
     service TINYINT NOT NULL,
-    customer INT NOT NULL,
+    user INT NOT NULL,
     schedule INT NOT NULL
 );
 
@@ -40,7 +44,7 @@ CREATE TABLE IF NOT EXISTS epmployee_schedule(
 
 CREATE TABLE IF NOT EXISTS favorites(
 	employee INT NOT NULL,
-    customer INT NOT NULL
+    user INT NOT NULL
 );
 
 ALTER TABLE employees
@@ -49,7 +53,7 @@ ALTER TABLE employees
 ALTER TABLE appointments 
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
     ADD FOREIGN KEY (service) REFERENCES services(uid),
-    ADD FOREIGN KEY (customer) REFERENCES customers(uid),
+    ADD FOREIGN KEY (user) REFERENCES users(uid),
     ADD FOREIGN KEY (schedule) REFERENCES schedules(code)
 ;
 
@@ -60,6 +64,5 @@ ALTER TABLE epmployee_schedule
 
 ALTER TABLE favorites
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
-    ADD FOREIGN KEY (customer) REFERENCES customers(uid)
+    ADD FOREIGN KEY (user) REFERENCES users(uid)
 ;
-

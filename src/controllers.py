@@ -57,13 +57,13 @@ class SignupController(MethodView):
 
     def get(self):
         return "Signup a user"
-    
+
     def post(self):
         if request.is_json:
             email = request.json['email']
             name = request.json['name']
             password = request.json['password']
-            verify_email = self.model.fetch_one("SELECT * FROM customers WHERE email = %s", (email, ))
+            verify_email = self.model.fetch_one("SELECT * FROM customers WHERE email = %s", (email))
             if(not verify_email or verify_email is None):
                 hash_password = generate_password_hash(password)
                 self.model.execute_query("INSERT INTO customers(name, email, password) VALUES(%s, %s, %s)", (name, email, hash_password))
@@ -86,3 +86,31 @@ class SignupController(MethodView):
             "message": "Please send me a JSON FORMAT"
         }), 400)
         return response
+
+class AdminUsersController(MethodView):
+    def __init__(self) -> None:
+        self.model = Model()
+
+    def get(self):
+        data = self.model.fetch_all("SELECT * FROM users")
+        return make_response(jsonify({
+            "users_data" : data
+        }), 200)
+
+    def patch(self):
+        if request.is_json():
+            uid = request.json['uid']
+            update_user = self.model.execute_query("UPDATE users WHERE uid = %s", (uid))
+            response = make_response(jsonify({
+                
+            }))
+
+class AdminEmployeesController(MethodView):
+    def __init__(self) -> None:
+        self.model = Model()
+
+    def get(self):
+        data = self.model.fetch_all("SELECT * FROM employees")
+        return make_response(jsonify({
+            "employees_data" : data
+        }), 201)
