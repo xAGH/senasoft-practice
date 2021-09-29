@@ -20,13 +20,13 @@ class Application:
     def __settings(self) -> None:
         try:
             self.app.config.from_mapping(
-                SECRET_KEY="AJSLDHNASKJDBNALSDNA"
+                SECRET_KEY=""
             )
             CORS(self.app, resources={
-                {
-                    "origins": "http://localhost:4200"
+                r"/*": {
+                    "origins": ["http://localhost:4200"]
                 }
-            })
+            }, support_credentials=True)
         except Exception as e:
             pass
     
