@@ -2,11 +2,11 @@ from flask import request, jsonify, make_response
 from functools import wraps
 import jwt
 
-"""
-    @function decoradora.
-    @verify_token toma la cabecera enviada por el cliente y verifica que la firma del token sea la misma.
-"""
 def verify_token(function):
+    """
+        @function decoradora.
+        @verify_token toma la cabecera enviada por el cliente y verifica que la firma del token sea la misma.
+    """
     @wraps(function)
     def wrapper(*args, **kwargs):
         token = request.headers.get('Authorization')
@@ -27,5 +27,27 @@ def verify_token(function):
             response = make_response(jsonify({
                 "message": f"Token error: {e}"
             }), 401)
+        return function(*args, **kwargs)
+    return wrapper
+
+
+def verify_role(function):
+    """
+    @function decoradora.
+    @verify_role toma la cabecera enviada por el cliente y verifica que el usuario tenga permisos de amdmin.
+    """
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        token = request.headers.get('Authorization')
+     
+        read_data = jwt.decode(token, "secretkey", algorithms=['HS256'])
+        if read_data['is_admin'] == '1':
+            pass
+        else:
+            response = make_response(jsonify({
+            "message": "No permissions"
+        }), 401)
+            return response
+            
         return function(*args, **kwargs)
     return wrapper

@@ -1,5 +1,5 @@
-CREATE SCHEMA db_estetica;
-USE db_estetica;
+CREATE SCHEMA db_senasoft;
+USE db_senasoft;
 
 CREATE TABLE employees(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -21,18 +21,19 @@ CREATE TABLE services(
     price INT NOT NULL
 );
 
-CREATE TABLE customers(
+CREATE TABLE users(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
     email VARCHAR(125) NOT NULL,
-    password VARCHAR(30) NOT NULL
+    password VARCHAR(400) NOT NULL,
+    is_admin CHAR(1) NOT NULL DEFAULT '0'
 );
 
 CREATE TABLE appointments(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     employee INT NOT NULL,
     service TINYINT NOT NULL,
-    customer INT NOT NULL,
+    user INT NOT NULL,
     schedule INT NOT NULL
 );
 
@@ -43,7 +44,7 @@ CREATE TABLE epmployee_schedule(
 
 CREATE TABLE favorites(
 	employee INT NOT NULL,
-    customer INT NOT NULL
+    user INT NOT NULL
 );
 
 ALTER TABLE employees
@@ -52,7 +53,7 @@ ALTER TABLE employees
 ALTER TABLE appointments 
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
     ADD FOREIGN KEY (service) REFERENCES services(uid),
-    ADD FOREIGN KEY (customer) REFERENCES customers(uid),
+    ADD FOREIGN KEY (user) REFERENCES users(uid),
     ADD FOREIGN KEY (schedule) REFERENCES schedules(code)
 ;
 
@@ -63,7 +64,7 @@ ALTER TABLE epmployee_schedule
 
 ALTER TABLE favorites
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
-    ADD FOREIGN KEY (customer) REFERENCES customers(uid)
+    ADD FOREIGN KEY (user) REFERENCES users(uid)
 ;
 
 

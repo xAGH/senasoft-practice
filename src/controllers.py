@@ -2,7 +2,7 @@ from flask import request, make_response, jsonify
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
 from src.models import Model
-from src.hooks import verify_token
+from src.hooks import verify_role, verify_token
 import jwt, datetime
 
 class IndexController(MethodView):
@@ -26,13 +26,14 @@ class SigninController(MethodView):
         if request.is_json:
             email = request.json['email']
             password = request.json['password']
-            verify_data = self.model.fetch_one("SELECT * FROM customers WHERE email = %s", (email, ))
+            verify_data = self.model.fetch_one("SELECT * FROM users WHERE email = %s", (email, ))
             if(verify_data or verify_data is not None):
                 verify_password = check_password_hash(verify_data[3], password)
                 if(verify_password):
                     token: str = jwt.encode({
                         "subject": verify_data[0],
                         "email": verify_data[2],
+                        "is_admin": verify_data[4],
                         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
                     }, "secretkey")
                     response = make_response(jsonify({
@@ -63,10 +64,10 @@ class SignupController(MethodView):
             email = request.json['email']
             name = request.json['name']
             password = request.json['password']
-            verify_email = self.model.fetch_one("SELECT * FROM customers WHERE email = %s", (email))
+            verify_email = self.model.fetch_one("SELECT * FROM users WHERE email = %s", (email))
             if(not verify_email or verify_email is None):
                 hash_password = generate_password_hash(password)
-                self.model.execute_query("INSERT INTO customers(name, email, password) VALUES(%s, %s, %s)", (name, email, hash_password))
+                self.model.execute_query("INSERT INTO users(name, email, password) VALUES(%s, %s, %s)", (name, email, hash_password))
                 token: str = jwt.encode({
                     "name": name,
                     "email": email,
@@ -88,6 +89,9 @@ class SignupController(MethodView):
         return response
 
 class AdminUsersController(MethodView):
+
+    decorators = [verify_token, verify_role]
+
     def __init__(self) -> None:
         self.model = Model()
 
@@ -98,14 +102,18 @@ class AdminUsersController(MethodView):
         }), 200)
 
     def patch(self):
-        if request.is_json():
+        if request.is_json:
             uid = request.json['uid']
-            update_user = self.model.execute_query("UPDATE users WHERE uid = %s", (uid))
+            update_user = self.model.execute_query("UPDATE users SET is_admin = '1' WHERE uid = %s", (uid))
             response = make_response(jsonify({
-                
-            }))
+                "message":"User modified successfully."
+            }), 200)
+            return response
 
 class AdminEmployeesController(MethodView):
+
+    decorators = [verify_token, verify_role]
+
     def __init__(self) -> None:
         self.model = Model()
 
