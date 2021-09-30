@@ -38,16 +38,31 @@ def verify_role(function):
     """
     @wraps(function)
     def wrapper(*args, **kwargs):
+        
         token = request.headers.get('Authorization')
-     
-        read_data = jwt.decode(token, "secretkey", algorithms=['HS256'])
-        if read_data['is_admin'] == '1':
-            pass
-        else:
+
+        try:
+            read_data = jwt.decode(token, "secretkey", algorithms=['HS256'])
+            if read_data['is_admin'] == '0':
+                response = make_response(jsonify({
+                    "message": "No permissions"
+                }), 401)
+                return response
+        except jwt.InvalidTokenError as e:
             response = make_response(jsonify({
-            "message": "No permissions"
-        }), 401)
+                "message": "Token is missing or invalid"
+            }), 401)
             return response
-            
+        except jwt.ExpiredSignatureError as e:
+            response = make_response(jsonify({
+                "message": "Token is expired"
+            }), 401)
+            return response
+        except Exception as e:
+            response = make_response(jsonify({
+                "message": f"Token error: {e}"
+            }), 401)
+            return function(*args, **kwargs)
+       
         return function(*args, **kwargs)
     return wrapper

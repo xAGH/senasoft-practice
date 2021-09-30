@@ -42,9 +42,6 @@ class SigninController(MethodView):
                     }), 201)
                     response.headers['Authorization'] = token
                     return response
-                return make_response(jsonify({
-                    "message": "Wrong credentials"
-                }), 400)
             return make_response(jsonify({
                 "message": "Wrong credentials"
             }), 401)
@@ -102,13 +99,39 @@ class AdminUsersController(MethodView):
         }), 200)
 
     def patch(self):
+        response = make_response(jsonify({
+                "message": "Please send me a JSON FORMAT"
+            }), 400)
         if request.is_json:
-            uid = request.json['uid']
-            update_user = self.model.execute_query("UPDATE users SET is_admin = '1' WHERE uid = %s", (uid))
-            response = make_response(jsonify({
-                "message":"User modified successfully."
-            }), 200)
-            return response
+            try:
+                uid = request.json['uid']
+                process = request.json['process']
+                if process == True:
+                    self.model.execute_query("UPDATE users SET is_admin = '1' WHERE uid = %s", (uid))
+                    response = make_response(jsonify({
+                        "Success":"The user now has admin permissions."
+                    }), 200)
+
+                elif process == False:
+                    self.model.execute_query("UPDATE users SET is_admin = '0' WHERE uid = %s", (uid))
+                    response = make_response(jsonify({
+                        "Success":"The user now hasn't admin permissions."
+                    }), 200)
+
+                else:
+                    response = make_response(jsonify({
+                        "message":"Please send me a valid process. False -> Delete admin permission or True -> Add admin permission."
+                    }), 200)
+
+                return response
+            
+            except:
+                response = make_response(jsonify({
+                        "message":"Please send me a 'process' and a 'uid' key"
+                    }), 200)
+
+        return response
+
 
 class AdminEmployeesController(MethodView):
 
