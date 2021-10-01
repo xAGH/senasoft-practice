@@ -9,7 +9,7 @@ CREATE TABLE employees(
 );
 
 CREATE TABLE schedules(
-	code INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	code CHAR(1) PRIMARY KEY NOT NULL,
     timeStart TIME NOT NULL,
     timeEnd	 TIME NOT NULL,
     status CHAR(1)
@@ -34,12 +34,12 @@ CREATE TABLE appointments(
     employee INT NOT NULL,
     service CHAR(4) NOT NULL,
     user INT NOT NULL,
-    schedule INT NOT NULL
+    schedule CHAR(1) NOT NULL
 );
 
 CREATE TABLE epmployee_schedule(
 	employee INT NOT NULL,
-    schedule INT NOT NULL
+    schedule CHAR(1) NOT NULL
 );
 
 CREATE TABLE favorites(
@@ -66,3 +66,8 @@ ALTER TABLE favorites
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
     ADD FOREIGN KEY (user) REFERENCES users(uid)
 ;
+
+INSERT INTO schedules 
+VALUES("D", "08:00:00", "11:00:00", "1"),
+      ("T", "14:00:00", "17:00:00", "1"),
+      ("N", "17:00:00", "20:00:00", "1");
