@@ -225,3 +225,14 @@ class AdminEmployeesController(MethodView):
                 }), 406)
             
         return response
+
+class FavoritesController(MethodView):
+    def get(self):
+        token = request.headers['Authorization']
+        user_uid = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
+        favorites = self.model.fetch_all("SELECT employee FROM favorites WHERE user = %s", user_uid)
+        employees = self.model.fetch_all("SELECT * FROM employees")
+        data = favorites + employees
+        return make_response(jsonify({
+            "favorites_data" : data
+        }), 200)
