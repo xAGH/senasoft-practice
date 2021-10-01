@@ -5,7 +5,7 @@ CREATE TABLE employees(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	name VARCHAR(50) NOT NULL,
 	lastName VARCHAR(50) DEFAULT '',
-    service TINYINT
+    service CHAR(4)
 );
 
 CREATE TABLE schedules(
@@ -18,7 +18,7 @@ CREATE TABLE schedules(
 CREATE TABLE services(
 	uid CHAR(4) PRIMARY KEY NOT NULL,
     name VARCHAR(30) NOT NULL,
-    price INT NOT NULL
+    price FLOAT NOT NULL
 );
 
 CREATE TABLE users(
@@ -32,7 +32,7 @@ CREATE TABLE users(
 CREATE TABLE appointments(
 	uid INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     employee INT NOT NULL,
-    service TINYINT NOT NULL,
+    service CHAR(4) NOT NULL,
     user INT NOT NULL,
     schedule INT NOT NULL
 );
@@ -66,5 +66,3 @@ ALTER TABLE favorites
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
     ADD FOREIGN KEY (user) REFERENCES users(uid)
 ;
-
-

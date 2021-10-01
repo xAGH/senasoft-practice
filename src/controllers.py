@@ -177,7 +177,7 @@ class AdminEmployeesController(MethodView):
         data = self.model.fetch_all("SELECT * FROM employees")
         return make_response(jsonify({
             "employees_data" : data
-        }), 201)
+        }), 200)
 
     def post(self):
         response = make_response(jsonify({
@@ -186,15 +186,25 @@ class AdminEmployeesController(MethodView):
 
         if request.is_json:
             try:
-                uid = request.json['uid']
+                response = make_response(jsonify({
+                    "message" : "That service does'nt exists."
+                }), 400)
                 name = request.json['name']
                 lastname = request.json['lastname']
                 service = request.json['service']
-
-            except:
+                services = self.model.fetch_one("SELECT uid FROM services where uid = %s", service)
+                if services != None:
+                    self.model.execute_query("INSERT INTO employees(name, lastname, service) values(%s, %s, %s)", (name, lastname, service))
+                    response = make_response(jsonify({
+                        "Success": "The employee was created successfully."
+                    }), 201)
+            except Exception as e:
                 response = make_response(jsonify({
-                    "message":"Please send me a name, a lastname, a service and an 'uid' key"
+                    "message":"Please send me a name, a lastname and a service key",
+                    "mess":f"{e}"
                 }), 406)
+
+        return response
 
     def delete(self):
         response = make_response(jsonify({
