@@ -16,7 +16,7 @@ CREATE TABLE schedules(
 );
 
 CREATE TABLE services(
-	uid CHAR(6) PRIMARY KEY NOT NULL,
+	uid CHAR(4) PRIMARY KEY NOT NULL,
     name VARCHAR(30) NOT NULL,
     price INT NOT NULL
 );
