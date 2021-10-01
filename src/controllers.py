@@ -106,6 +106,8 @@ class AdminUsersController(MethodView):
             try:
                 uid = request.json['uid']
                 process = request.json['process']
+                token = request.headers.get('Authorization')
+                uid_token = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
                 if process == True:
                     self.model.execute_query("UPDATE users SET is_admin = '1' WHERE uid = %s", (uid))
                     response = make_response(jsonify({
@@ -113,22 +115,53 @@ class AdminUsersController(MethodView):
                     }), 200)
 
                 elif process == False:
-                    self.model.execute_query("UPDATE users SET is_admin = '0' WHERE uid = %s", (uid))
-                    response = make_response(jsonify({
-                        "Success":"The user now hasn't admin permissions."
-                    }), 200)
+                    if uid == uid_token:
+                        response = make_response(jsonify({
+                            "message":"You cannot remove your admin permissions."
+                        }), 400)
+                    else:
+                        self.model.execute_query("UPDATE users SET is_admin = '0' WHERE uid = %s", (uid))
+                        response = make_response(jsonify({
+                            "Success":"The user now hasn't admin permissions."
+                        }), 200)
 
                 else:
                     response = make_response(jsonify({
                         "message":"Please send me a valid process. False -> Delete admin permission or True -> Add admin permission."
-                    }), 200)
-
-                return response
+                    }), 406)
             
             except:
                 response = make_response(jsonify({
-                        "message":"Please send me a 'process' and a 'uid' key"
-                    }), 200)
+                        "message":"Please send me a 'process' and an 'uid' key"
+                    }), 406)
+
+        return response
+
+    def delete(self):
+        response = make_response(jsonify({
+                "message": "Please send me a JSON FORMAT"
+            }), 400)
+
+        if request.is_json:
+            try:
+                uid = request.json['uid']
+                token = request.headers['Authorization']
+                uid_token = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
+                if uid_token == uid:
+                    response = make_response(jsonify({
+                        "message": "You can't delete yourself."
+                    }))
+
+                else:
+                    self.model.execute_query("DELETE FROM users WHERE uid = %s", uid)
+                    response = make_response(jsonify({
+                        "Success": "The user was successfully deleted"
+                    }))
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'uid' key"
+                }), 406)
 
         return response
 
