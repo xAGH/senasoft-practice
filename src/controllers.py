@@ -150,13 +150,13 @@ class AdminUsersController(MethodView):
                 if uid_token == uid:
                     response = make_response(jsonify({
                         "message": "You can't delete yourself."
-                    }))
+                    }), 400)
 
                 else:
                     self.model.execute_query("DELETE FROM users WHERE uid = %s", uid)
                     response = make_response(jsonify({
                         "Success": "The user was successfully deleted"
-                    }))
+                    }), 200)
 
             except:
                 response = make_response(jsonify({
@@ -178,3 +178,40 @@ class AdminEmployeesController(MethodView):
         return make_response(jsonify({
             "employees_data" : data
         }), 201)
+
+    def post(self):
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+
+        if request.is_json:
+            try:
+                uid = request.json['uid']
+                name = request.json['name']
+                lastname = request.json['lastname']
+                service = request.json['service']
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me a name, a lastname, a service and an 'uid' key"
+                }), 406)
+
+    def delete(self):
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+        if request.is_json:
+
+            try:
+                uid = request.json['uid']
+                self.model.execute_query("DELETE FROM employees WHERE uid = %s", uid)
+                response = make_response(jsonify({
+                    "Success": "The user was successfully deleted"
+                }), 200)
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'uid' key"
+                }), 406)
+            
+        return response
