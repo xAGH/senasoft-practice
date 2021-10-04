@@ -35,4 +35,5 @@ class Application:
         self.app.add_url_rule(routes['signin'], view_func=routes['signin_controller'], methods=['POST', 'GET'])
         self.app.add_url_rule(routes["admin_users"], view_func=routes["admin_users_controller"])
         self.app.add_url_rule(routes["admin_employees"], view_func=routes["admin_employees_controller"])
-        self.app.add_url_rule(routes["favorite"], view_func=routes["favorite_controller"])
+        self.app.add_url_rule(routes["favorites"], view_func=routes["favorites_controller"])
+        self.app.add_url_rule(routes["appointments"], view_func=routes["appointments_controller"])
