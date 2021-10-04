@@ -200,8 +200,7 @@ class AdminEmployeesController(MethodView):
                     }), 201)
             except Exception as e:
                 response = make_response(jsonify({
-                    "message":"Please send me a name, a lastname and a service key",
-                    "mess":f"{e}"
+                    "message":"Please send me a name, a lastname and a service key"
                 }), 406)
 
         return response
@@ -227,12 +226,68 @@ class AdminEmployeesController(MethodView):
         return response
 
 class FavoritesController(MethodView):
+
+    decorators = [verify_token]
+
+    def __init__(self) -> None:
+        self.model = Model()
+        self.token = request.headers['Authorization']
+
     def get(self):
-        token = request.headers['Authorization']
-        user_uid = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
-        favorites = self.model.fetch_all("SELECT employee FROM favorites WHERE user = %s", user_uid)
-        employees = self.model.fetch_all("SELECT * FROM employees")
-        data = favorites + employees
-        return make_response(jsonify({
-            "favorites_data" : data
-        }), 200)
+            user_uid = str(jwt.decode(self.token, "secretkey", algorithms=['HS256'])["subject"])
+            favorites = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
+            FROM favorites f, employees e WHERE f.employee = e.uid;""")
+            employees = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
+            FROM favorites f, employees e WHERE f.employee != e.uid;""")
+            return make_response(jsonify({
+                "favorites_employees" : favorites,
+                "employees": employees
+            }), 200)
+                
+    def post(self):
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+        if request.is_json:
+
+            try:
+                user_uid = int(jwt.decode(self.token, "secretkey", algorithms=['HS256'])["subject"])
+                employee_uid = int(request.json['employee_uid'])
+                exists = self.model.fetch_one("SELECT * FROM favorites WHERE user = %s AND employee = %s", (user_uid, employee_uid))
+                response = make_response(jsonify({
+                        "message":"The employee is actually a user's favorite."
+                    }), 200)
+                if not exists:
+                    self.model.execute_query("INSERT INTO favorites VALUES(%s, %s)", (employee_uid, user_uid))
+                    response = make_response(jsonify({
+                        "message":"The employee was added to the user's favorites successfully."
+                    }), 201)
+
+            except Exception as e:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'employee_uid' key (int)",
+                    "a":f"{e}"
+                }), 406)
+            
+        return response
+
+    def delete(self):
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+        if request.is_json:
+
+            try:
+                user_uid = int(jwt.decode(self.token, "secretkey", algorithms=['HS256'])["subject"])
+                employee_uid = request.json['employee_uid']
+                self.model.execute_query(f"DELETE FROM favorites WHERE user = {user_uid} AND employee = {employee_uid}")
+                response = make_response(jsonify({
+                    "Success": "The user was successfully deleted"
+                }), 200)
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'employee_uid' key"
+                }), 406)
+            
+        return response
