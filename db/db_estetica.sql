@@ -11,8 +11,7 @@ CREATE TABLE employees(
 CREATE TABLE schedules(
 	code CHAR(1) PRIMARY KEY NOT NULL,
     timeStart TIME NOT NULL,
-    timeEnd	 TIME NOT NULL,
-    status CHAR(1)
+    timeEnd	 TIME NOT NULL	
 );
 
 CREATE TABLE services(
@@ -39,7 +38,8 @@ CREATE TABLE appointments(
 
 CREATE TABLE epmployee_schedule(
 	employee INT NOT NULL,
-    schedule CHAR(1) NOT NULL
+    schedule CHAR(1) NOT NULL,
+    status CHAR(1)
 );
 
 CREATE TABLE favorites(
@@ -68,6 +68,6 @@ ALTER TABLE favorites
 ;
 
 INSERT INTO schedules 
-VALUES("D", "08:00:00", "11:00:00", "1"),
-      ("T", "14:00:00", "17:00:00", "1"),
-      ("N", "17:00:00", "20:00:00", "1");
+VALUES("D", "08:00:00", "11:00:00"),
+      ("T", "14:00:00", "17:00:00"),
+      ("N", "17:00:00", "20:00:00");

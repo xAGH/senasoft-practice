@@ -111,7 +111,7 @@ class AdminUsersController(MethodView):
                 if process == True:
                     self.model.execute_query("UPDATE users SET is_admin = '1' WHERE uid = %s", (uid))
                     response = make_response(jsonify({
-                        "Success":"The user now has admin permissions."
+                        "message":"The user now has admin permissions."
                     }), 200)
 
                 elif process == False:
@@ -122,7 +122,7 @@ class AdminUsersController(MethodView):
                     else:
                         self.model.execute_query("UPDATE users SET is_admin = '0' WHERE uid = %s", (uid))
                         response = make_response(jsonify({
-                            "Success":"The user now hasn't admin permissions."
+                            "message":"The user now hasn't admin permissions."
                         }), 200)
 
                 else:
@@ -155,7 +155,7 @@ class AdminUsersController(MethodView):
                 else:
                     self.model.execute_query("DELETE FROM users WHERE uid = %s", uid)
                     response = make_response(jsonify({
-                        "Success": "The user was successfully deleted"
+                        "message": "The user was successfully deleted"
                     }), 200)
 
             except:
@@ -195,8 +195,10 @@ class AdminEmployeesController(MethodView):
                 services = self.model.fetch_one("SELECT uid FROM services where uid = %s", service)
                 if services != None:
                     self.model.execute_query("INSERT INTO employees(name, lastname, service) values(%s, %s, %s)", (name, lastname, service))
+                    self.model.fetch_one("SELECT uid FROM employees WHERE name = %s AND lastane ")
+                    self.model.execute_query("INSERT INTO epmployee_schedule")
                     response = make_response(jsonify({
-                        "Success": "The employee was created successfully."
+                        "message": "The employee was created successfully."
                     }), 201)
             except Exception as e:
                 response = make_response(jsonify({
@@ -215,7 +217,7 @@ class AdminEmployeesController(MethodView):
                 uid = request.json['uid']
                 self.model.execute_query("DELETE FROM employees WHERE uid = %s", uid)
                 response = make_response(jsonify({
-                    "Success": "The user was successfully deleted"
+                    "message": "The user was successfully deleted"
                 }), 200)
 
             except:
@@ -234,15 +236,31 @@ class FavoritesController(MethodView):
         self.token = request.headers['Authorization']
 
     def get(self):
-            user_uid = str(jwt.decode(self.token, "secretkey", algorithms=['HS256'])["subject"])
-            favorites = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
-            FROM favorites f, employees e WHERE f.employee = e.uid;""")
-            employees = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
-            FROM favorites f, employees e WHERE f.employee != e.uid;""")
-            return make_response(jsonify({
-                "favorites_employees" : favorites,
-                "employees": employees
-            }), 200)
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+        if request.is_json:
+            try:
+                schedule = request.json['schedule']
+                user_uid = str(jwt.decode(self.token, "secretkey", algorithms=['HS256'])["subject"])
+                favorites = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
+                FROM favorites f, employees e, employee_schedule es  WHERE f.employee = e.uidn AND 
+                es.employee = e.uid AND es.schedule = {schedule} AND es.status = '1';""")
+                if favorites:
+                    employees = self.model.fetch_all("""SELECT e.uid, e.name, e.lastname, e.service 
+                    FROM favorites f, employees e WHERE f.employee != e.uid;""")
+                else:
+                    employees = self.model.fetch_all("SELECT * FROM employees")
+                print(favorites)
+                return make_response(jsonify({
+                    "favorites_employees" : favorites,
+                    "employees": employees
+                }), 200)
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'schedule' key"
+                }), 406)
                 
     def post(self):
         response = make_response(jsonify({
@@ -282,7 +300,7 @@ class FavoritesController(MethodView):
                 employee_uid = request.json['employee_uid']
                 self.model.execute_query(f"DELETE FROM favorites WHERE user = {user_uid} AND employee = {employee_uid}")
                 response = make_response(jsonify({
-                    "Success": "The user was successfully deleted"
+                    "message": "The user was successfully deleted"
                 }), 200)
 
             except:
@@ -291,3 +309,25 @@ class FavoritesController(MethodView):
                 }), 406)
             
         return response
+
+class AppointmentsController(MethodView):
+
+    decorators = [verify_token]
+
+    def __init__(self) -> None:
+        self.model = Model()
+
+    @verify_role
+    def get(self):
+        data = self.model.fetch_all("SELECT * FROM appointments")
+        return make_response(jsonify({
+            "appointments": data
+        }), 200)
+    
+    def post(self):
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+
+        if request.is_json:
+            pass
