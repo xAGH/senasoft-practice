@@ -12,7 +12,6 @@ def verify_token(function):
         token = request.headers.get('Authorization')
         try:
             read_data = jwt.decode(token, "secretkey", algorithms=['HS256'])
-            print(read_data)
         except jwt.InvalidTokenError as e:
             response = make_response(jsonify({
                 "message": "Token is missing or invalid"
