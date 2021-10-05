@@ -1,4 +1,4 @@
-from flask import request, make_response, jsonify 
+from flask import json, request, make_response, jsonify 
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
 from src.models import Model
@@ -315,7 +315,7 @@ class FavoritesController(MethodView):
                 employee_uid = request.json['employee_uid']
                 self.model.execute_query(f"DELETE FROM favorites WHERE user = {user_uid} AND employee = {employee_uid}")
                 response = make_response(jsonify({
-                    "message": "The user was successfully deleted"
+                    "message": "The user was deleted successfully"
                 }), 200)
 
             except:
@@ -348,14 +348,40 @@ class AppointmentsController(MethodView):
             try:
                 employee = request.json['employee']
                 schedule = request.json['schedule']
+                service = request.json['service']
                 token = request.headers['Authorization']
                 user_uid = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
-                
+                self.model.execute_query(f"""UPDATE employee_schedule SET status = '0' WHERE 
+                employee = {employee} AND schedule = '{schedule}'""")
+                self.model.execute_query(f"""INSERT INTO appointments(employee, service, user, schedule)
+                VALUES({employee}, '{service}', {user_uid}, '{schedule}')""")
+                response = make_response(jsonify({
+                    "message": "The appointment was created successfully"
+                }), 201)
 
             except:
                 response = make_response(jsonify({
-                    "message":"Please send me an 'employee_uid' and a 'schedule' key"
+                    "message":"Please send me an 'employee', a 'service' and a 'schedule' key"
                 }), 406)
 
+        return response
 
+    @verify_role
+    def delete(self):
+        response = make_response(jsonify({
+            "message" : "Please send me a JSON FORMAT"
+        }), 400)
+        if request.is_json:
+            try:
+                uid = request.json['uid']
+                self.model.execute_query(f"DELETE FROM appointments WHERE uid = {uid}")
+                response = make_response(jsonify({
+                    "message": "The appointment was deleted successfully"
+                }), 200)
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'employee_uid' key"
+                }), 406)
+            
         return response
