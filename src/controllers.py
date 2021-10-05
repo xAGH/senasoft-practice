@@ -346,8 +346,16 @@ class AppointmentsController(MethodView):
 
         if request.is_json:
             try:
-                pass
+                employee = request.json['employee']
+                schedule = request.json['schedule']
+                token = request.headers['Authorization']
+                user_uid = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
+                
+
             except:
                 response = make_response(jsonify({
                     "message":"Please send me an 'employee_uid' and a 'schedule' key"
                 }), 406)
+
+
+        return response
