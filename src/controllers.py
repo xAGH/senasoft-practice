@@ -195,8 +195,12 @@ class AdminEmployeesController(MethodView):
                 services = self.model.fetch_one("SELECT uid FROM services where uid = %s", service)
                 if services != None:
                     self.model.execute_query("INSERT INTO employees(name, lastname, service) values(%s, %s, %s)", (name, lastname, service))
-                    self.model.fetch_one("SELECT uid FROM employees WHERE name = %s AND lastane ")
-                    self.model.execute_query("INSERT INTO epmployee_schedule")
+                    uid = self.model.fetch_one("SELECT uid FROM employees ORDER BY uid DESC LIMIT 1")[0]
+                    print(uid)
+                    self.model.execute_query(f"""INSERT INTO employee_schedule values
+                    ({uid},'D', '1'),
+                    ({uid},'T', '1'),
+                    ({uid},'N', '1')""")
                     response = make_response(jsonify({
                         "message": "The employee was created successfully."
                     }), 201)
@@ -240,28 +244,39 @@ class FavoritesController(MethodView):
             "message" : "Please send me a JSON FORMAT"
         }), 400)
         if request.is_json:
-            try:
+            
                 schedule = request.json['schedule']
                 user_uid = str(jwt.decode(self.token, "secretkey", algorithms=['HS256'])["subject"])
                 favorites = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
-                FROM favorites f, employees e, employee_schedule es  WHERE f.employee = e.uidn AND 
-                es.employee = e.uid AND es.schedule = {schedule} AND es.status = '1';""")
+                FROM favorites f, employees e, employee_schedule es WHERE f.employee = e.uid and 
+                es.employee = e.uid AND es.schedule = '{schedule}' and es.status = '1'""")
                 if favorites:
-                    employees = self.model.fetch_all("""SELECT e.uid, e.name, e.lastname, e.service 
-                    FROM favorites f, employees e WHERE f.employee != e.uid;""")
-                else:
-                    employees = self.model.fetch_all("SELECT * FROM employees")
-                print(favorites)
-                return make_response(jsonify({
-                    "favorites_employees" : favorites,
-                    "employees": employees
-                }), 200)
+                    print(user_uid)
+                    employees_available = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
+                    FROM favorites f, employees e, employee_schedule es WHERE f.employee != e.uid and f.user = {user_uid}
+                    and es.employee = e.uid AND es.schedule = '{schedule}' and es.status = '1';""")
 
-            except:
-                response = make_response(jsonify({
-                    "message":"Please send me an 'schedule' key"
-                }), 406)
+                    employees_unavailable = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service 
+                    FROM favorites f, employees e, employee_schedule es WHERE f.employee != e.uid and f.user = {user_uid}
+                    and es.employee = e.uid AND es.schedule = '{schedule}' and es.status = '0';""")
+                else:
+                    favorites = False
+                    employees_available = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service FROM 
+                    employees e, employee_schedule es WHERE e.uid = es.employee AND es.schedule = '{schedule}' and es.status = '1';""")
+                    employees_unavailable = self.model.fetch_all(f"""SELECT e.uid, e.name, e.lastname, e.service FROM 
+                    employees e, employee_schedule es WHERE e.uid = es.employee AND es.schedule = '{schedule}' and es.status = '0';""")
                 
+                if len(employees_unavailable) < 1:
+                    employees_unavailable = False
+
+                response = make_response(jsonify({
+                    "favorites_employees" : favorites,
+                    "available_employees": employees_available,
+                    "unavailable_employees": employees_unavailable
+                }), 200)
+            
+        return response
+
     def post(self):
         response = make_response(jsonify({
             "message" : "Please send me a JSON FORMAT"
@@ -330,4 +345,17 @@ class AppointmentsController(MethodView):
         }), 400)
 
         if request.is_json:
-            pass
+            try:
+                employee = request.json['employee']
+                schedule = request.json['schedule']
+                token = request.headers['Authorization']
+                user_uid = str(jwt.decode(token, "secretkey", algorithms=['HS256'])["subject"])
+                
+
+            except:
+                response = make_response(jsonify({
+                    "message":"Please send me an 'employee_uid' and a 'schedule' key"
+                }), 406)
+
+
+        return response

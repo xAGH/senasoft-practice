@@ -36,7 +36,7 @@ CREATE TABLE appointments(
     schedule CHAR(1) NOT NULL
 );
 
-CREATE TABLE epmployee_schedule(
+CREATE TABLE employee_schedule(
 	employee INT NOT NULL,
     schedule CHAR(1) NOT NULL,
     status CHAR(1)
@@ -57,7 +57,7 @@ ALTER TABLE appointments
     ADD FOREIGN KEY (schedule) REFERENCES schedules(code)
 ;
 
-ALTER TABLE epmployee_schedule
+ALTER TABLE employee_schedule
 	ADD FOREIGN KEY (employee) REFERENCES employees(uid),
     ADD FOREIGN KEY (schedule) REFERENCES schedules(code)
 ;
